@@ -1,0 +1,55 @@
+﻿# Build results
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.idea/
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# Sensitive configuration files
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+# .NET tools
+.dotnet/
+.nuget/
+
+# Entity Framework migrations (optional - comment out if you want to track these)
+# Migrations/
+
+#React
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
