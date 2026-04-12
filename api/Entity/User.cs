@@ -23,19 +23,19 @@ public class User
     public bool Update(string name, string? descriptions, string password)
     {
         bool result = false;
-        if (!string.IsNullOrEmpty(name))
+        if (!string.IsNullOrEmpty(name) && Name != name)
         {
             Name = name;
             result = true;
         }
 
-        if (!string.IsNullOrEmpty(descriptions))
+        if (!string.IsNullOrEmpty(descriptions) && Descriptions != descriptions)
         {
             Descriptions = descriptions;
             result = true;
         }
 
-        if (!string.IsNullOrEmpty(password))
+        if (!string.IsNullOrEmpty(password) && password != Password)
         {
             HashPassword(password);
             result = true;

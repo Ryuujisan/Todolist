@@ -1,10 +1,10 @@
 import {createApi} from "@reduxjs/toolkit/query/react";
-import {customBaseQuery} from "../../api/baseApi.ts";
+import {baseQueryWithErrorHandling} from "../../api/baseApi.ts";
 import type {AuthData, User} from "../../type/User.ts";
 import {ClearUser} from "./authSlicer.ts";
 export const authApi = createApi({
     reducerPath: 'authApi',
-    baseQuery: customBaseQuery,
+    baseQuery: baseQueryWithErrorHandling,
     tagTypes: ['User'],
     endpoints: (builder) => ({
         fetchMe : builder.query<User, void>({
@@ -62,11 +62,11 @@ export const authApi = createApi({
                 }
             }
         }),
-        update: builder.mutation<User, {password: string, description: string}>({
-            query:({password, description}) => ({
+        update: builder.mutation<User, { password?: string; descriptions?: string; name?: string }>({
+            query: ({ password, descriptions, name }) => ({
                 url: "auth/update",
                 method: "PUT",
-                body: {password, description}
+                body: { password, name, descriptions }
             }),
             async onQueryStarted(_authData, {dispatch, queryFulfilled}) {
                 try {

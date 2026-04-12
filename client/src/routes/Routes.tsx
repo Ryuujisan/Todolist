@@ -5,7 +5,8 @@ import {LoginPage} from "../feature/auth/LoginPage.tsx";
 import {ProfilePage} from "../feature/auth/ProfilePage.tsx";
 import {RegisterPage} from "../feature/auth/RegisterPage.tsx";
 import {AuthGuard} from "../layaut/AuthGuard.tsx";
-import {Logout} from "../feature/auth/Logout.tsx";
+import {NotFound} from "../errors/NotFound.tsx";
+import {ServerError} from "../errors/ServerError.tsx";
 
 export const routes = createBrowserRouter([
     {
@@ -13,7 +14,10 @@ export const routes = createBrowserRouter([
         children : [
           //  {path:"", element: <Navigate to="/login" replace />},
             {path: "/login", element: <LoginPage />},
-            {path: "/register", element: <RegisterPage />}
+            {path: "/register", element: <RegisterPage />},
+            {path: "/not-found", element: <NotFound />},
+            {path: "/server-error", element: <ServerError />},
+            {path: '*', element: <Navigate replace to='/not-found' />}
         ]
     },
     {
