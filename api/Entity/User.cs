@@ -8,6 +8,8 @@ public class User
     public required string Name { get; set; }
     public string? Descriptions { get; set; }
     
+    public List<Workspace> Workspaces { get; set; } = new List<Workspace>();
+    
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

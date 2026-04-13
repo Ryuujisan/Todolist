@@ -16,6 +16,7 @@ builder.Services.AddDbContext<ToDoContext>(opt =>
 builder.Services.SetupApi(builder.Configuration);
 builder.Services.SetupJWT(builder.Configuration);
 builder.Services.AddCors();
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithOrigins("http://localhost:3000"));

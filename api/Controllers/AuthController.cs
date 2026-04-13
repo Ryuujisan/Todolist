@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics;
 using api.Data;
 using api.Entity;
+using api.Models.User;
 using api.Services;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,24 +13,25 @@ namespace api.Controllers;
 
 public class AuthController(IJwtTokenGenerator jwtTokenGenerator, 
     ToDoContext dbContext, 
-    IOptions<JwtOptions> jwtOptions) : BaseApiController
+    IOptions<JwtOptions> jwtOptions,
+    IMapper mapper) : BaseApiController
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
-
+    
     [HttpPost("login")]
-    public async Task<ActionResult<User>> Login([FromBody] AuthData authData)
+    public async Task<ActionResult<UserDto>> Login([FromBody] AuthData? authData)
     {
         if (authData is null)
         {
             return BadRequest("Request body is required");
         }
-
+        
         if (string.IsNullOrWhiteSpace(authData.Email) || string.IsNullOrWhiteSpace(authData.Password))
         {
             return BadRequest("Email and password are required");
         }
 
-        var user = await dbContext.Users.FirstOrDefaultAsync(x => x.Email == authData.Email);
+        var user = await FetchUser(authData.Email);
         if (user == null || !user.VerifyPassword(authData.Password))
         {
             return Unauthorized("Invalid email or password");
@@ -36,12 +39,12 @@ public class AuthController(IJwtTokenGenerator jwtTokenGenerator,
 
         CreateJwtCookie(user);
 
-        return Ok(user);
+        return Ok(mapper.Map<UserDto>(user));
     }
 
     [Authorize]
     [HttpGet("me")]
-    public async Task<ActionResult<User>> Me()
+    public async Task<ActionResult<UserDto>> Me()
     {
         var id = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (!int.TryParse(id, out var userId))
@@ -49,12 +52,29 @@ public class AuthController(IJwtTokenGenerator jwtTokenGenerator,
             return Unauthorized();
         }
 
-        var user = await dbContext.Users.FindAsync(userId);
-        return user == null ? Unauthorized() : Ok(user);
+        var user = await FetchUser(userId);
+            
+        if(user == null)
+        {
+            return Unauthorized();
+        }
+
+        if (user.Workspaces.Count == 0)
+        {
+            dbContext.Workspaces.Add(new Workspace()
+            {
+                Owner = user,
+                Name = $"{user.Name}'s Workspace",
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+        await dbContext.SaveChangesAsync();
+        return  Ok(mapper.Map<UserDto>(user));
     }
 
+    
     [HttpPost("register")]
-    public async Task<ActionResult<User>> Register([FromBody] AuthData data)
+    public async Task<ActionResult<UserDto>> Register([FromBody] AuthData data)
     {
         if (data is null)
         {
@@ -110,7 +130,7 @@ public class AuthController(IJwtTokenGenerator jwtTokenGenerator,
 
     [Authorize]
     [HttpPut("update")]
-    public async Task<ActionResult<User>> Update([FromBody] AuthData data)
+    public async Task<ActionResult<UserDto>> Update([FromBody] AuthData data)
     {
         if (data is null)
         {
@@ -123,7 +143,7 @@ public class AuthController(IJwtTokenGenerator jwtTokenGenerator,
             return Unauthorized();
         }
 
-        var user = await dbContext.Users.FindAsync(userId);
+        var user = FetchUser(userId).Result;
         if (user == null)
         {
             return Unauthorized();
@@ -134,7 +154,7 @@ public class AuthController(IJwtTokenGenerator jwtTokenGenerator,
             await dbContext.SaveChangesAsync();
         }
 
-        return Ok(user);
+        return Ok(mapper.Map<UserDto>(user));
     } 
 
     private void CreateJwtCookie(User user)
@@ -150,7 +170,21 @@ public class AuthController(IJwtTokenGenerator jwtTokenGenerator,
             Path = "/"
         });
     }
-
+    
+    private async Task<User?> FetchUser(int userId)
+    {
+        return await dbContext.Users
+            .Include(x => x.Workspaces)
+            .FirstOrDefaultAsync(f => f.Id == userId);
+    }
+    
+    private async Task<User?> FetchUser(string email)
+    {
+        return await dbContext.Users
+            .Include(x => x.Workspaces)
+            .FirstOrDefaultAsync(f => f.Email == email);
+    }
+    
     // Helper Classes
     public class AuthData
     {

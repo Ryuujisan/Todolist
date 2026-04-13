@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using api.Data;
 
@@ -10,9 +11,11 @@ using api.Data;
 namespace api.Migrations
 {
     [DbContext(typeof(ToDoContext))]
-    partial class ToDoContextModelSnapshot : ModelSnapshot
+    [Migration("20260412225714_workspace")]
+    partial class workspace
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -46,7 +49,7 @@ namespace api.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("api.Entity.WorkItem", b =>
@@ -75,7 +78,7 @@ namespace api.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("WorkspaceId")
+                    b.Property<int?>("WorkspaceId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -84,7 +87,7 @@ namespace api.Migrations
 
                     b.HasIndex("WorkspaceId");
 
-                    b.ToTable("WorkItems", (string)null);
+                    b.ToTable("WorkItem");
                 });
 
             modelBuilder.Entity("api.Entity.Workspace", b =>
@@ -110,7 +113,7 @@ namespace api.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Workspaces", (string)null);
+                    b.ToTable("Workspace");
                 });
 
             modelBuilder.Entity("api.Entity.WorkItem", b =>
@@ -121,15 +124,11 @@ namespace api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("api.Entity.Workspace", "Workspace")
-                        .WithMany("Items")
-                        .HasForeignKey("WorkspaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("api.Entity.Workspace", null)
+                        .WithMany("items")
+                        .HasForeignKey("WorkspaceId");
 
                     b.Navigation("User");
-
-                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("api.Entity.Workspace", b =>
@@ -150,7 +149,7 @@ namespace api.Migrations
 
             modelBuilder.Entity("api.Entity.Workspace", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("items");
                 });
 #pragma warning restore 612, 618
         }
