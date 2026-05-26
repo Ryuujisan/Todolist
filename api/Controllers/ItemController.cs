@@ -1,4 +1,7 @@
-﻿using api.Data;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using api.Data;
 using api.Entity;
 using api.Models.Items;
 using api.Utils;
@@ -33,6 +36,32 @@ public class ItemController(ToDoContext context, IMapper mapper) : BaseApiContro
         return Ok(mapper.Map<ItemDto[]>(items));
     }
 
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<ActionResult<ItemDto>> GetById(int id)
+    {
+        if(ControllerUtils.GetUserId(User, out int userId) == false)
+        {
+            return Unauthorized();
+        }
+        
+        var item = await context.WorkItems
+            .Include(x => x.Workspace)
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        
+        if(item == null)
+        {
+            return NotFound();
+        }
+
+        if (item.User.Id != userId)
+        {
+            return Unauthorized();
+        }
+        return Ok(mapper.Map<ItemDto>(item));
+    }
+    
     [HttpPost("create")]
     [Authorize]
     public async Task<ActionResult<ItemDto>> Create([FromBody]ItemData? data)
@@ -42,6 +71,12 @@ public class ItemController(ToDoContext context, IMapper mapper) : BaseApiContro
             return BadRequest("Request body is required");
         }
 
+        Console.WriteLine($"workd space id: {data.WorkspaceId}");
+        Console.WriteLine($"title: {data.Name}");
+        Console.WriteLine($"description: {data.Description}");
+        Console.WriteLine($"status: {data.Status}");
+
+        
         if (ControllerUtils.GetUserId(User, out int userId) == false)
         {
             return Unauthorized();
@@ -60,7 +95,7 @@ public class ItemController(ToDoContext context, IMapper mapper) : BaseApiContro
             Title = data.Name, 
             Workspace = workspace,
             User = user,
-            Description = data.Description,
+            Description = data?.Description ?? string.Empty,
             Status = data.Status,
             CreatedAt = DateTime.UtcNow
         });
@@ -69,7 +104,7 @@ public class ItemController(ToDoContext context, IMapper mapper) : BaseApiContro
         return result ? Ok(mapper.Map<ItemDto>(workspace.Items.Last())) : BadRequest("Problem with create item");
     }
 
-    [HttpPut("update/{id}")]
+    [HttpPut("{id}")]
     [Authorize]
     public async Task<ActionResult<ItemDto>> Update([FromBody] ItemData? data, int id)
     {

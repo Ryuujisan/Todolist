@@ -58,7 +58,7 @@ export const authApi = createApi({
                     const {data: user} = await queryFulfilled;
                     dispatch(authApi.util.upsertQueryData("fetchMe", undefined, user));
                 } catch (error) {
-                    
+                    console.error(error);
                 }
             }
         }),
@@ -73,7 +73,7 @@ export const authApi = createApi({
                     const {data: user} = await queryFulfilled;
                     dispatch(authApi.util.upsertQueryData("fetchMe", undefined, user));
                 } catch (error) {
-
+                    console.error(error);
                 }
             }
         })

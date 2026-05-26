@@ -1,5 +1,5 @@
 import {useAppSelector} from "../store/store.ts";
-import {Navigate, Outlet} from "react-router";
+import {Navigate} from "react-router";
 import {App} from "./App.tsx";
 
 export const AuthGuard = () => {
@@ -12,7 +12,6 @@ export const AuthGuard = () => {
             </div>
         );
     }
-    console.log("auth guard Checking auth " + auth.isCheckingAuth + " " + auth.user);
     return (
         auth.user ? <App /> : <Navigate to="/login" replace />
     )
